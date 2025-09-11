@@ -12,6 +12,17 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 
+function parseAddressByComma(addr) {
+  const parts = addr.split(",").map((s) => s.trim());
+  const len = parts.length;
+
+  const city = parts[len - 1] || null;
+  const district = parts[len - 2] || null;
+  const ward = parts[len - 3] || null;
+
+  return { ward, district, city };
+}
+
 function Field({ label, value }) {
   return (
     <div className="field">
@@ -95,19 +106,20 @@ export default function Home() {
 
   function exportExcelSale() {
     if (!data) return;
-
+    console.log(data);
     const summary = {
-      Id: "",
-      ["Tôi là * "]: "",
-      ["Loại tin đăng * "]: "",
-      ["Loại tài sản * "]: "",
+      ["Tôi là * "]: "Môi giới",
+      ["Loại tin đăng * "]: "Sell",
+      ["Gói tin đăng"]: "Platinum",
+      ["Gói tin đăng"]: "",
       ["Tên tin đăng *"]: data?.title || "",
       ["Mô tả *"]: data?.descriptionHTML || "",
       ["Số điện thoại *"]: "",
       ["Địa chỉ chi tiết *"]: data?.address || "",
-      ["Tỉnh/Thành Phố *"]: "",
-      ["Quận  *"]: "",
-      ["Phường/Xã *"]: "",
+      ["Tỉnh/Thành Phố *"]:
+        parseAddressByComma(data?.address || "")?.city || "",
+      ["Quận  *"]: parseAddressByComma(data?.address || "")?.district || "",
+      ["Phường/Xã *"]: parseAddressByComma(data?.address || "")?.ward || "",
       ["Phòng ngủ"]: data?.bedrooms || "",
       ["Phòng vệ sinh"]: data?.bathrooms || "",
       ["Diện tích  *"]: data?.area || "",
@@ -116,7 +128,7 @@ export default function Home() {
       ["Tình trạng nội thất"]: data?.furniture || "",
       ["Hướng nhà"]: data?.balconyDirection || "",
       ["Video link (Link youtube)"]: "",
-      ["Dự án  *"]: "",
+      ["Dự án  *"]: data?.project,
       ["Block/Tháp"]: "",
       ["Tầng"]: "",
       ["Căn hộ  *"]: "",
@@ -149,9 +161,10 @@ export default function Home() {
     if (!data) return;
     const summary = {
       Id: "",
-      ["Tôi là * "]: "",
-      ["Loại tin đăng * "]: "",
-      ["Loại tài sản * "]: "",
+      ["Tôi là * "]: "Môi giới",
+      ["Loại tin đăng * "]: "Sell",
+      ["Gói tin đăng"]: "Platinum",
+      ["Gói tin đăng"]: "",
       ["Tên tin đăng *"]: data?.title || "",
       ["Mô tả *"]: data?.descriptionHTML || "",
       ["Số điện thoại *"]: "",

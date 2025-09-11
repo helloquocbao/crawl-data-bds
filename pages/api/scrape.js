@@ -93,7 +93,8 @@ export default async function handler(req, res) {
     const browser = await puppeteer.launch({
       headless: "new",
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe", // hoặc Chromium path
+      executablePath:
+        "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", // hoặc Chromium path
     });
     const page = await browser.newPage();
     await page.setRequestInterception(true);
@@ -194,7 +195,6 @@ export default async function handler(req, res) {
             ""
         )
         .filter(Boolean);
-
       const project = text(q("div.re__project-title")?.textContent || "");
 
       return {
@@ -277,7 +277,7 @@ export default async function handler(req, res) {
       descriptionHTML: raw.descriptionHTML || undefined,
       attributes,
       images,
-      project,
+      project: raw.project || undefined,
     };
     return res.status(200).json(data);
   } catch (e) {
