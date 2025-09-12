@@ -31,6 +31,70 @@ function Field({ label, value }) {
     </div>
   );
 }
+function getNumberFromString(str) {
+  const area = str.replace(/[^0-9.,]/g, ""); // bỏ tất cả ký tự không phải số
+
+  return area;
+}
+
+function parsePrice(str) {
+  if (!str) return null;
+
+  str = str.toLowerCase().trim();
+  let multiplier = 1;
+
+  if (str.includes("tỷ")) multiplier = 1_000_000_000;
+  else if (str.includes("triệu")) multiplier = 1_000_000;
+
+  const numMatch = str.match(/[\d.,]+/);
+  if (!numMatch) return null;
+
+  let numStr = numMatch[0];
+  if (numStr.includes(",") && !numStr.includes("."))
+    numStr = numStr.replace(",", ".");
+  else numStr = numStr.replace(/,/g, "");
+
+  const num = parseFloat(numStr) * multiplier;
+  return num;
+}
+
+function formatPrice(str) {
+  const num = parsePrice(str);
+  if (num === null) return null;
+  return num.toLocaleString("en-US");
+}
+
+function cleanHTML(html) {
+  if (!html) return "";
+
+  const div = document.createElement("div");
+  div.innerHTML = html;
+
+  // Xóa các span chứa số điện thoại/ẩn
+  const spans = div.querySelectorAll(
+    "span.hidden-mobile, span.hidden-phone, span.js__btn-tracking"
+  );
+  spans.forEach((span) => span.remove());
+
+  // Chuyển <br> thành xuống dòng
+  div.querySelectorAll("br").forEach((br) => {
+    br.replaceWith("\n");
+  });
+
+  // Chuyển <p> thành xuống dòng
+  div.querySelectorAll("p").forEach((p) => {
+    p.replaceWith(p.textContent + "\n");
+  });
+
+  // Lấy text thuần
+  const text = div.textContent || div.innerText || "";
+
+  // Loại bỏ khoảng trắng thừa nhưng giữ xuống dòng
+  return text
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n\s*\n/g, "\n\n")
+    .trim();
+}
 
 export default function Home() {
   const [url, setUrl] = useState("https://batdongsan.com.vn/");
@@ -106,35 +170,42 @@ export default function Home() {
 
   function exportExcelSale() {
     if (!data) return;
-    console.log(data);
+
     const summary = {
       ["Tôi là * "]: "Môi giới",
       ["Loại tin đăng * "]: "Sell",
       ["Gói tin đăng"]: "Platinum",
-      ["Gói tin đăng"]: "",
       ["Tên tin đăng *"]: data?.title || "",
-      ["Mô tả *"]: data?.descriptionHTML || "",
+      ["Mô tả *"]: cleanHTML(data?.descriptionHTML) || "",
       ["Số điện thoại *"]: "",
       ["Địa chỉ chi tiết *"]: data?.address || "",
       ["Tỉnh/Thành Phố *"]:
         parseAddressByComma(data?.address || "")?.city || "",
       ["Quận  *"]: parseAddressByComma(data?.address || "")?.district || "",
       ["Phường/Xã *"]: parseAddressByComma(data?.address || "")?.ward || "",
-      ["Phòng ngủ"]: data?.bedrooms || "",
-      ["Phòng vệ sinh"]: data?.bathrooms || "",
-      ["Diện tích  *"]: data?.area || "",
-      ["Trạng thái pháp lý"]: data?.legal || "",
+      ["Phòng ngủ"]: data?.bedrooms ? `${data.bedrooms} ngủ` : "",
+      ["Phòng vệ sinh"]: data?.bathrooms ? `${data.bathrooms} vệ sinh` : "",
+      ["Diện tích  *"]: data?.area ? getNumberFromString(data.area) : "",
+      ["Trạng thái pháp lý"]:
+        data?.legal === "Sổ đỏ/ Sổ hồng"
+          ? "Đã Cấp Sổ Hồng"
+          : "Đang Chờ Sổ Hồng",
       ["Trạng thái bàn giao"]: "",
-      ["Tình trạng nội thất"]: data?.furniture || "",
+      ["Tình trạng nội thất"]:
+        data?.furniture === "Đầy đủ"
+          ? "Nội thất đầy đủ"
+          : data?.furniture === "Cơ bản"
+          ? "Nội thất cơ bản"
+          : "Không có nội thất",
       ["Hướng nhà"]: data?.balconyDirection || "",
       ["Video link (Link youtube)"]: "",
       ["Dự án  *"]: data?.project,
       ["Block/Tháp"]: "",
       ["Tầng"]: "",
-      ["Căn hộ  *"]: "",
-      ["Giá (VNĐ)  *"]: data?.price || "",
-      ["Dự kiến ngày đăng  *"]: data?.postedAt || "",
-      ["Ngày Đẩy Tin Đăng"]: data?.postedAt || "",
+      ["Căn hộ  *"]: "Đang cập nhật",
+      ["Giá (VNĐ)  *"]: data?.price ? formatPrice(data.price) : "",
+      ["Dự kiến ngày đăng  *"]: "",
+      ["Ngày Đẩy Tin Đăng"]: "",
     };
     const wsSummary = XLSX.utils.json_to_sheet([summary]);
     const attrs = Array.isArray(data.attributes)
@@ -160,36 +231,40 @@ export default function Home() {
   function exportExcelRent() {
     if (!data) return;
     const summary = {
-      Id: "",
       ["Tôi là * "]: "Môi giới",
-      ["Loại tin đăng * "]: "Sell",
+      ["Loại tin đăng * "]: "Rent",
       ["Gói tin đăng"]: "Platinum",
-      ["Gói tin đăng"]: "",
       ["Tên tin đăng *"]: data?.title || "",
-      ["Mô tả *"]: data?.descriptionHTML || "",
+      ["Mô tả *"]: cleanHTML(data?.descriptionHTML) || "",
       ["Số điện thoại *"]: "",
       ["Địa chỉ chi tiết *"]: data?.address || "",
-      ["Tỉnh/Thành Phố *"]: "",
-      ["Quận  *"]: "",
-      ["Phường/Xã *"]: "",
-      ["Phòng ngủ"]: data?.bedrooms || "",
-      ["Phòng vệ sinh"]: data?.bathrooms || "",
-      ["Diện tích  *"]: data?.area || "",
-      ["Trạng thái pháp lý"]: data?.legal || "",
+      ["Tỉnh/Thành Phố *"]:
+        parseAddressByComma(data?.address || "")?.city || "",
+      ["Quận  *"]: parseAddressByComma(data?.address || "")?.district || "",
+      ["Phường/Xã *"]: parseAddressByComma(data?.address || "")?.ward || "",
+      ["Phòng ngủ"]: data?.bedrooms ? `${data.bedrooms} ngủ` : "",
+      ["Phòng vệ sinh"]: data?.bathrooms ? `${data.bathrooms} vệ sinh` : "",
+      ["Diện tích  *"]: data?.area ? getNumberFromString(data.area) : "",
+      ["Trạng thái pháp lý"]:
+        data?.legal === "Sổ đỏ/ Sổ hồng"
+          ? "Đã Cấp Sổ Hồng"
+          : "Đang Chờ Sổ Hồng",
       ["Trạng thái bàn giao"]: "",
-      ["Tình trạng nội thất"]: data?.furniture || "",
+      ["Tình trạng nội thất"]:
+        data?.furniture === "Đầy đủ"
+          ? "Nội thất đầy đủ"
+          : data?.furniture === "Cơ bản"
+          ? "Nội thất cơ bản"
+          : "Không có nội thất",
       ["Hướng nhà"]: data?.balconyDirection || "",
       ["Video link (Link youtube)"]: "",
-      ["Dự án  *"]: "",
+      ["Dự án  *"]: data?.project,
       ["Block/Tháp"]: "",
       ["Tầng"]: "",
-      ["Căn hộ  *"]: "",
-      ["Giá (VNĐ)  *"]: data?.price || "",
-      ["Dự kiến ngày đăng  *"]: data?.postedAt || "",
-      ["Ngày Đẩy Tin Đăng"]: data?.postedAt || "",
-      ["Thời Hạn Thuê"]: "",
-      ["Có thể dọn vào"]: "",
-      ["Phí Quản Lý (VND)/Tháng *"]: "",
+      ["Căn hộ  *"]: "Đang cập nhật",
+      ["Giá (VNĐ)  *"]: data?.price ? formatPrice(data.price) : "",
+      ["Dự kiến ngày đăng  *"]: "",
+      ["Ngày Đẩy Tin Đăng"]: "",
     };
     const wsSummary = XLSX.utils.json_to_sheet([summary]);
     const attrs = Array.isArray(data.attributes)
