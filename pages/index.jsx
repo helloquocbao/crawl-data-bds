@@ -193,7 +193,7 @@ export default function Home() {
 
     const summary = {
       ["Tôi là * "]: "Môi giới",
-      ["Loại tin đăng * "]: "Sell",
+      ["Loại tin đăng * "]: "Bán",
       ["Gói tin đăng"]: "Platinum",
       ["Tên tin đăng *"]: data?.title || "",
       ["Mô tả *"]: cleanHTML(data?.descriptionHTML) || "",
@@ -254,7 +254,7 @@ export default function Home() {
     if (!data) return;
     const summary = {
       ["Tôi là * "]: "Môi giới",
-      ["Loại tin đăng * "]: "Rent",
+      ["Loại tin đăng * "]: "Thuê",
       ["Gói tin đăng"]: "Platinum",
       ["Tên tin đăng *"]: data?.title || "",
       ["Mô tả *"]: cleanHTML(data?.descriptionHTML) || "",
@@ -319,7 +319,7 @@ export default function Home() {
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center">
             <h1 className="text-2xl font-bold text-white">
-              CrawlData<span className="text-crypto-purple">Flow</span>
+              DOMDOM <span className="text-crypto-purple">CrawlData</span>
             </h1>
           </div>
 
