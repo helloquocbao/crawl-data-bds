@@ -8,15 +8,26 @@
     "start": "next start"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.1.13",
     "cheerio": "^1.0.0",
     "file-saver": "^2.0.5",
     "framer-motion": "^11.0.0",
     "jszip": "^3.10.1",
-    "lucide-react": "^0.446.0",
+    "lucide-react": "^0.544.0",
     "next": "14.2.5",
     "puppeteer": "^22.8.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "tailwind-merge": "^2.5.2",
+    "tailwindcss-animate": "^1.0.7",
     "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.15",
+    "@types/react": "19.1.12",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.11",
+    "typescript": "5.9.2"
   }
 }
