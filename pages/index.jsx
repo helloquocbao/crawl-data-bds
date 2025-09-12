@@ -10,6 +10,15 @@ import {
 } from "lucide-react";
 import { ArrowRight } from "lucide-react";
 
+function isFromBatDongSan(url) {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.replace(/^www\./, "") === "batdongsan.com.vn";
+  } catch {
+    return false;
+  }
+}
+
 function normalizeDirection(input) {
   return input.replace(/\s*-\s*/g, " ");
 }
@@ -107,10 +116,10 @@ export default function Home() {
   const [err, setErr] = useState(null);
   const [lightboxIdx, setLightboxIdx] = useState(-1);
 
-  const domainOk = useMemo(
-    () => /https?:\/\/([^/]*\.)?batdongsan\.com\.vn\//i.test(url),
-    [url]
-  );
+  // const domainOk = useMemo(
+  //   () => /https?:\/\/([^/]*\.)?batdongsan\.com\.vn\//i.test(url),
+  //   [url]
+  // );
 
   useEffect(() => {
     function onKey(e) {
@@ -128,6 +137,12 @@ export default function Home() {
     setLoading(true);
     setErr(null);
     setData(null);
+    console.log("url", url);
+    if (!isFromBatDongSan(url, "batadongsan.com.vn")) {
+      setErr("Chỉ hỗ trợ batdongsan.com.vn");
+      setLoading(false);
+      return;
+    }
     try {
       const res = await fetch("/api/scrape?url=" + encodeURIComponent(url));
       if (!res.ok) throw new Error("HTTP " + res.status);
@@ -136,6 +151,7 @@ export default function Home() {
       setData(json);
     } catch (e) {
       setErr(e?.message || "Scrape thất bại");
+      setLoading(false);
     } finally {
       setLoading(false);
     }
@@ -348,10 +364,9 @@ export default function Home() {
       <div className="min-h-screen overflow-x-hidden">
         <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-gradient-hero hero-glow">
           {/* Animated Background Elements */}
-
           <div className="container mx-auto px-4 mt-24 relative z-10">
-            <div className="flex flex-col lg:flex-row items-center">
-              <div className="lg:w-1/2 animate-fade-in-left">
+            <div className="grid grid-cols-7 space-x-4 items-center ">
+              <div className="col-span-4 animate-fade-in-left">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                   <span className="text-gradient">
                     Trích xuất thông tin Batdongsan.com.vn
@@ -365,20 +380,49 @@ export default function Home() {
                   placeholder="https://batdongsan.com.vn/..."
                 />
 
-                <div className="flex justify-end gap-4 mt-2">
+                <div className="flex justify-between gap-4 mt-2">
+                  {err ? <span>{err}</span> : <span></span>}
                   <button
                     onClick={handleScrape}
-                    disabled={!domainOk || loading}
+                    disabled={loading}
                     className="text-white flex bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
                   >
-                    Trích xuất
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    {loading ? (
+                      <>
+                        <svg
+                          className="animate-spin h-5 w-5 mr-2 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                          />
+                        </svg>
+                        Đang trích xuất...
+                      </>
+                    ) : (
+                      <>
+                        Trích xuất
+                        <ArrowRight className="ml-2 h-5 w-5" />
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
 
-              <div className="lg:w-1/2 mt-12 lg:mt-0 animate-fade-in-right">
-                <div className="relative max-w-md mx-auto animate-float">
+              <div className="col-span-3 flex justify-end pr-16 mt-12 lg:mt-0 animate-fade-in-right">
+                <div className="relative max-w-md animate-float">
                   <img
                     src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&h=800"
                     alt="Trading platform dashboard"
