@@ -192,8 +192,9 @@ export default function Home() {
     if (!data) return;
 
     const summary = {
-      ["Tôi là * "]: "Môi giới",
-      ["Loại tin đăng * "]: "Bán",
+      ["Id"]: "",
+      ["Tôi là *"]: "Nhà môi giới",
+      ["Loại tin đăng *"]: "Bán",
       ["Gói tin đăng"]: "Bạch Kim",
       ["Loại tài sản *"]: "",
       ["Tên tin đăng *"]: data?.title || "",
@@ -254,8 +255,9 @@ export default function Home() {
   function exportExcelRent() {
     if (!data) return;
     const summary = {
-      ["Tôi là * "]: "Môi giới",
-      ["Loại tin đăng * "]: "Thuê",
+      ["Id"]: "",
+      ["Tôi là *"]: "Nhà môi giới",
+      ["Loại tin đăng *"]: "Thuê",
       ["Gói tin đăng"]: "Bạch Kim",
       ["Loại tài sản *"]: "",
       ["Tên tin đăng *"]: data?.title || "",
