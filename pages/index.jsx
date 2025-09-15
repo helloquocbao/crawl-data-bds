@@ -194,7 +194,8 @@ export default function Home() {
     const summary = {
       ["Tôi là * "]: "Môi giới",
       ["Loại tin đăng * "]: "Bán",
-      ["Gói tin đăng"]: "Platinum",
+      ["Gói tin đăng"]: "Bạch Kim",
+      ["Loại tài sản *"]: "",
       ["Tên tin đăng *"]: data?.title || "",
       ["Mô tả *"]: cleanHTML(data?.descriptionHTML) || "",
       ["Số điện thoại *"]: "",
@@ -255,7 +256,8 @@ export default function Home() {
     const summary = {
       ["Tôi là * "]: "Môi giới",
       ["Loại tin đăng * "]: "Thuê",
-      ["Gói tin đăng"]: "Platinum",
+      ["Gói tin đăng"]: "Bạch Kim",
+      ["Loại tài sản *"]: "",
       ["Tên tin đăng *"]: data?.title || "",
       ["Mô tả *"]: cleanHTML(data?.descriptionHTML) || "",
       ["Số điện thoại *"]: "",
@@ -289,6 +291,9 @@ export default function Home() {
       ["Giá (VNĐ)  *"]: data?.price ? formatPrice(data.price) : "",
       ["Dự kiến ngày đăng  *"]: "",
       ["Ngày Đẩy Tin Đăng"]: "",
+      ["Thời Hạn Thuê"]: "",
+      ["Có thể dọn vào"]: "",
+      ["Phí Quản Lý (VND)/Tháng *"]: "",
     };
     const wsSummary = XLSX.utils.json_to_sheet([summary]);
     const attrs = Array.isArray(data.attributes)
