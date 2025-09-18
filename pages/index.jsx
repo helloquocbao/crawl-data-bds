@@ -9,6 +9,46 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { ArrowRight } from "lucide-react";
+function getToday() {
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2, "0");
+  const mm = String(today.getMonth() + 1).padStart(2, "0"); // Tháng tính từ 0
+  const yyyy = today.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+function getCategoryKey(productName, type) {
+  const normalized = productName?.toLowerCase();
+
+  if (type === "sale")
+    switch (true) {
+      case normalized.includes("đất"):
+        return "Đất";
+      case normalized.includes("căn hộ"):
+        return "Căn hộ chung cư";
+      case normalized.includes("biệt thự"):
+        return "Biệt Thự/ Nhà Phố";
+      case normalized.includes("shophouse"):
+        return "Cửa hàng";
+      default:
+        return null;
+    }
+  else {
+    switch (true) {
+      case normalized.includes("đất"):
+        return "Đất";
+      case normalized.includes("căn hộ"):
+        return "Căn hộ chung cư";
+      case normalized.includes("văn phòng"):
+        return "Văn phòng";
+      case normalized.includes("biệt thự"):
+        return "Biệt Thự/ Nhà Phố";
+      case normalized.includes("shophouse"):
+        return "Cửa hàng";
+      default:
+        return null;
+    }
+  }
+}
 
 function isFromBatDongSan(url) {
   try {
@@ -20,7 +60,9 @@ function isFromBatDongSan(url) {
 }
 
 function normalizeDirection(input) {
-  return input.replace(/\s*-\s*/g, " ");
+  console.log("Normalizing direction:", input);
+  console.log("data", input.replace(/\s*-\s*/g, " ").trim());
+  return input.replace(/\s*-\s*/g, " ").trim();
 }
 
 function parseAddressByComma(addr) {
@@ -73,7 +115,8 @@ function parsePrice(str) {
 
 function formatPrice(str) {
   const num = parsePrice(str);
-  if (num === null) return null;
+
+  if (num === null) return 0;
   return num.toLocaleString("en-US");
 }
 
@@ -137,7 +180,7 @@ export default function Home() {
     setLoading(true);
     setErr(null);
     setData(null);
-    console.log("url", url);
+
     if (!isFromBatDongSan(url, "batadongsan.com.vn")) {
       setErr("Chỉ hỗ trợ batdongsan.com.vn");
       setLoading(false);
@@ -147,7 +190,7 @@ export default function Home() {
       const res = await fetch("/api/scrape?url=" + encodeURIComponent(url));
       if (!res.ok) throw new Error("HTTP " + res.status);
       const json = await res.json();
-      console.log(json);
+
       setData(json);
     } catch (e) {
       setErr(e?.message || "Scrape thất bại");
@@ -188,7 +231,7 @@ export default function Home() {
     saveAs(blob, `batdongsan_${data.codeId || "listing"}.json`);
   }
 
-  function exportExcelSale() {
+  async function exportExcelSale() {
     if (!data) return;
 
     const summary = {
@@ -196,23 +239,25 @@ export default function Home() {
       ["Tôi là *"]: "Nhà môi giới",
       ["Loại tin đăng *"]: "Bán",
       ["Gói tin đăng"]: "Bạch Kim",
-      ["Loại tài sản *"]: "",
-      ["Tên tin đăng *"]: data?.title || "",
-      ["Mô tả *"]: cleanHTML(data?.descriptionHTML) || "",
+      ["Loại tài sản *"]: data?.productType
+        ? getCategoryKey(data.productType, "sale")
+        : null,
+      ["Tên tin đăng *"]: data?.title || null,
+      ["Mô tả *"]: cleanHTML(data?.descriptionHTML) || null,
       ["Số điện thoại *"]: "",
-      ["Địa chỉ chi tiết *"]: data?.address || "",
+      ["Địa chỉ chi tiết *"]: data?.address || null,
       ["Tỉnh/Thành Phố *"]:
-        parseAddressByComma(data?.address || "")?.city || "",
-      ["Quận  *"]: parseAddressByComma(data?.address || "")?.district || "",
-      ["Phường/Xã *"]: parseAddressByComma(data?.address || "")?.ward || "",
-      ["Phòng ngủ"]: data?.bedrooms ? `${data.bedrooms} ngủ` : "",
-      ["Phòng vệ sinh"]: data?.bathrooms ? `${data.bathrooms} vệ sinh` : "",
-      ["Diện tích  *"]: data?.area ? getNumberFromString(data.area) : "",
+        parseAddressByComma(data?.address || "")?.city || null,
+      ["Quận  *"]: parseAddressByComma(data?.address || "")?.district || null,
+      ["Phường/Xã *"]: parseAddressByComma(data?.address || "")?.ward || null,
+      ["Phòng ngủ"]: data?.bedrooms ? `${data.bedrooms} ngủ` : null,
+      ["Phòng vệ sinh"]: data?.bathrooms ? `${data.bathrooms} vệ sinh` : null,
+      ["Diện tích  *"]: data?.area ? getNumberFromString(data.area) : null,
       ["Trạng thái pháp lý"]:
         data?.legal === "Sổ đỏ/ Sổ hồng"
           ? "Đã Cấp Sổ Hồng"
           : "Đang Chờ Sổ Hồng",
-      ["Trạng thái bàn giao"]: "",
+      ["Trạng thái bàn giao"]: null,
       ["Tình trạng nội thất"]:
         data?.furniture === "Đầy đủ"
           ? "Nội thất đầy đủ"
@@ -221,61 +266,61 @@ export default function Home() {
           : "Không có nội thất",
       ["Hướng nhà"]: data?.balconyDirection
         ? normalizeDirection(data.balconyDirection)
-        : "",
-      ["Video link (Link youtube)"]: "",
-      ["Dự án  *"]: data?.project,
-      ["Block/Tháp"]: "",
-      ["Tầng"]: "",
+        : null,
+      ["Video link (Link youtube)"]: null,
+      ["Dự án  *"]: data?.project || null,
+      ["Block/Tháp"]: null,
+      ["Tầng"]: null,
       ["Căn hộ  *"]: "Đang cập nhật",
-      ["Giá (VNĐ)  *"]: data?.price ? formatPrice(data.price) : "",
-      ["Dự kiến ngày đăng  *"]: "",
-      ["Ngày Đẩy Tin Đăng"]: "",
+      ["Giá (VNĐ)  *"]: data?.price ? formatPrice(data.price) : 0,
+      ["Dự kiến ngày đăng  *"]: getToday(),
+      ["Ngày Đẩy Tin Đăng"]: null,
     };
-    const wsSummary = XLSX.utils.json_to_sheet([summary]);
-    const attrs = Array.isArray(data.attributes)
-      ? data.attributes.map((a) => ({
-          Nhan: a.label || "",
-          Gia_tri: a.value || "",
-        }))
-      : [];
-    const imgs = (data.images || []).map((u, i) => ({
-      STT: i + 1,
-      Anh_URL: u,
-    }));
-    const wsImgs = XLSX.utils.json_to_sheet(
-      imgs.length ? imgs : [{ Thong_bao: "Khong co anh" }]
-    );
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, wsSummary, "Tong_quan");
-    XLSX.utils.book_append_sheet(wb, wsImgs, "Anh");
-    const name = `batdongsan_${data.codeId || "listing"}.xlsx`;
-    XLSX.writeFile(wb, name);
+
+    const res = await fetch("/api/exportExcel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(summary),
+    });
+
+    if (!res.ok) {
+      console.error("Export failed");
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "Listing_Import_SALE_filled.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
   }
 
-  function exportExcelRent() {
+  async function exportExcelRent() {
     if (!data) return;
     const summary = {
-      ["Id"]: "",
+      ["Id"]: null,
       ["Tôi là *"]: "Nhà môi giới",
       ["Loại tin đăng *"]: "Thuê",
       ["Gói tin đăng"]: "Bạch Kim",
-      ["Loại tài sản *"]: "",
-      ["Tên tin đăng *"]: data?.title || "",
-      ["Mô tả *"]: cleanHTML(data?.descriptionHTML) || "",
-      ["Số điện thoại *"]: "",
-      ["Địa chỉ chi tiết *"]: data?.address || "",
+      ["Loại tài sản *"]: data?.productType
+        ? getCategoryKey(data.productType, "rent")
+        : null,
+      ["Tên tin đăng *"]: data?.title || null,
+      ["Mô tả *"]: cleanHTML(data?.descriptionHTML) || null,
+      ["Số điện thoại *"]: null,
+      ["Địa chỉ chi tiết *"]: data?.address || null,
       ["Tỉnh/Thành Phố *"]:
-        parseAddressByComma(data?.address || "")?.city || "",
-      ["Quận  *"]: parseAddressByComma(data?.address || "")?.district || "",
-      ["Phường/Xã *"]: parseAddressByComma(data?.address || "")?.ward || "",
-      ["Phòng ngủ"]: data?.bedrooms ? `${data.bedrooms} ngủ` : "",
-      ["Phòng vệ sinh"]: data?.bathrooms ? `${data.bathrooms} vệ sinh` : "",
-      ["Diện tích  *"]: data?.area ? getNumberFromString(data.area) : "",
-      ["Trạng thái pháp lý"]:
-        data?.legal === "Sổ đỏ/ Sổ hồng"
-          ? "Đã Cấp Sổ Hồng"
-          : "Đang Chờ Sổ Hồng",
-      ["Trạng thái bàn giao"]: "",
+        parseAddressByComma(data?.address || "")?.city || null,
+      ["Quận  *"]: parseAddressByComma(data?.address || "")?.district || null,
+      ["Phường/Xã *"]: parseAddressByComma(data?.address || "")?.ward || null,
+      ["Phòng ngủ"]: data?.bedrooms ? `${data.bedrooms} ngủ` : null,
+      ["Phòng vệ sinh"]: data?.bathrooms ? `${data.bathrooms} vệ sinh` : null,
+      ["Diện tích  *"]: data?.area ? getNumberFromString(data.area) : null,
+      ["Trạng thái bàn giao"]: null,
       ["Tình trạng nội thất"]:
         data?.furniture === "Đầy đủ"
           ? "Nội thất đầy đủ"
@@ -284,38 +329,39 @@ export default function Home() {
           : "Không có nội thất",
       ["Hướng nhà"]: data?.balconyDirection
         ? normalizeDirection(data?.balconyDirection)
-        : "",
-      ["Video link (Link youtube)"]: "",
-      ["Dự án  *"]: data?.project,
-      ["Block/Tháp"]: "",
-      ["Tầng"]: "",
+        : null,
+      ["Video link (Link youtube)"]: null,
+      ["Dự án  *"]: data?.project || null,
+      ["Block/Tháp"]: null,
+      ["Tầng"]: null,
       ["Căn hộ  *"]: "Đang cập nhật",
-      ["Giá (VNĐ)  *"]: data?.price ? formatPrice(data.price) : "",
-      ["Dự kiến ngày đăng  *"]: "",
-      ["Ngày Đẩy Tin Đăng"]: "",
-      ["Thời Hạn Thuê"]: "",
-      ["Có thể dọn vào"]: "",
-      ["Phí Quản Lý (VND)/Tháng *"]: "",
+      ["Giá (VNĐ)  *"]: data?.price ? formatPrice(data.price) : 0,
+      ["Dự kiến ngày đăng  *"]: getToday(),
+      ["Ngày Đẩy Tin Đăng"]: null,
+      ["Thời Hạn Thuê"]: null,
+      ["Có thể dọn vào"]: null,
+      ["Phí Quản Lý (VND)/Tháng *"]: null,
     };
-    const wsSummary = XLSX.utils.json_to_sheet([summary]);
-    const attrs = Array.isArray(data.attributes)
-      ? data.attributes.map((a) => ({
-          Nhan: a.label || "",
-          Gia_tri: a.value || "",
-        }))
-      : [];
-    const imgs = (data.images || []).map((u, i) => ({
-      STT: i + 1,
-      Anh_URL: u,
-    }));
-    const wsImgs = XLSX.utils.json_to_sheet(
-      imgs.length ? imgs : [{ Thong_bao: "Khong co anh" }]
-    );
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, wsSummary, "Tong_quan");
-    XLSX.utils.book_append_sheet(wb, wsImgs, "Anh");
-    const name = `batdongsan_${data.codeId || "listing"}.xlsx`;
-    XLSX.writeFile(wb, name);
+    const res = await fetch("/api/exportExcelRent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(summary),
+    });
+
+    if (!res.ok) {
+      console.error("Export failed");
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "Listing_Import_RENT_filled.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
   }
 
   return (
@@ -452,6 +498,7 @@ export default function Home() {
                 <div className="grid grid-cols-12 space-y-2 gap-x-4 ">
                   <Field label="Tiêu đề" value={data.title} />
                   <Field label="Mã tin" value={data.codeId} />
+                  <Field label="Loại tài sản" value={data.productType} />
                   <Field label="Mức giá" value={data.price} />
                   <Field label="Đơn giá/m²" value={data.pricePerM2} />
                   <Field label="Diện tích" value={data.area} />

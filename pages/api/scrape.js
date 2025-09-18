@@ -174,6 +174,10 @@ export default async function handler(req, res) {
           q(".re__pr-short-description")?.textContent ||
           ""
       );
+      const productType =
+        document
+          .querySelector('.re__breadcrumb a[level="4"]')
+          ?.getAttribute("title") || "";
 
       const cfg = qa("div.re__pr-short-info-item.js__pr-config-item")
         .map((el) => ({
@@ -206,6 +210,7 @@ export default async function handler(req, res) {
         perM2,
         imgs,
         project,
+        productType,
       };
     });
 
@@ -278,6 +283,7 @@ export default async function handler(req, res) {
       attributes,
       images,
       project: raw.project || undefined,
+      productType: raw.productType || undefined,
     };
     return res.status(200).json(data);
   } catch (e) {
