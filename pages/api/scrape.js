@@ -226,6 +226,7 @@ export default async function handler(req, res) {
     const floors = mapBy("số tầng") || mapBy("tầng");
     const direction = mapBy("hướng nhà") || mapBy("hướng");
     const balconyDirection = mapBy("hướng ban công");
+    const houseDirection = mapBy("hướng nhà");
     const legal = mapBy("pháp lý");
     const furniture = mapBy("nội thất");
 
@@ -274,6 +275,7 @@ export default async function handler(req, res) {
       floors,
       direction,
       balconyDirection,
+      houseDirection,
       legal,
       furniture,
       address: raw.address || undefined,

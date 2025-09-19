@@ -24,8 +24,10 @@ function getCategoryKey(productName, type) {
       case normalized.includes("đất"):
         return "Đất";
       case normalized.includes("căn hộ"):
+      case normalized.includes("chung cư"):
         return "Căn hộ chung cư";
       case normalized.includes("biệt thự"):
+      case normalized.includes("nhà"):
         return "Biệt Thự/ Nhà Phố";
       case normalized.includes("shophouse"):
         return "Cửa hàng";
@@ -35,8 +37,12 @@ function getCategoryKey(productName, type) {
   else {
     switch (true) {
       case normalized.includes("đất"):
+      case normalized.includes("kho"):
+      case normalized.includes("nhà xưởng"):
         return "Đất";
       case normalized.includes("căn hộ"):
+      case normalized.includes("chung cư"):
+      case normalized.includes("nhà trọ"):
         return "Căn hộ chung cư";
       case normalized.includes("văn phòng"):
         return "Văn phòng";
@@ -44,6 +50,11 @@ function getCategoryKey(productName, type) {
         return "Biệt Thự/ Nhà Phố";
       case normalized.includes("shophouse"):
         return "Cửa hàng";
+      case normalized.includes("biệt thự"):
+      case normalized.includes("nhà mặt phố"):
+      case normalized.includes("nhà riêng"):
+      case normalized.includes("nhà"):
+        return "Biệt Thự/ Nhà Phố";
       default:
         return null;
     }
@@ -264,7 +275,9 @@ export default function Home() {
           : data?.furniture === "Cơ bản"
           ? "Nội thất cơ bản"
           : "Không có nội thất",
-      ["Hướng nhà"]: data?.balconyDirection
+      ["Hướng nhà"]: data?.houseDirection
+        ? normalizeDirection(data.houseDirection)
+        : data?.balconyDirection
         ? normalizeDirection(data.balconyDirection)
         : null,
       ["Video link (Link youtube)"]: null,
@@ -327,8 +340,10 @@ export default function Home() {
           : data?.furniture === "Cơ bản"
           ? "Nội thất cơ bản"
           : "Không có nội thất",
-      ["Hướng nhà"]: data?.balconyDirection
-        ? normalizeDirection(data?.balconyDirection)
+      ["Hướng nhà"]: data?.houseDirection
+        ? normalizeDirection(data.houseDirection)
+        : data?.balconyDirection
+        ? normalizeDirection(data.balconyDirection)
         : null,
       ["Video link (Link youtube)"]: null,
       ["Dự án  *"]: data?.project || null,
@@ -340,7 +355,7 @@ export default function Home() {
       ["Ngày Đẩy Tin Đăng"]: null,
       ["Thời Hạn Thuê"]: null,
       ["Có thể dọn vào"]: null,
-      ["Phí Quản Lý (VND)/Tháng *"]: null,
+      ["Phí Quản Lý (VND)/Tháng *"]: 0,
     };
     const res = await fetch("/api/exportExcelRent", {
       method: "POST",
